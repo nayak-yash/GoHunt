@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ash/gohunt/routes"
 	"fmt"
 	"log"
 	"os"
@@ -30,6 +31,8 @@ func main() {
 	})
 
 	app.Use(compress.New())
+
+	routes.SetRoutes(app)
 
 	// Start our server and listen for shutdown
 	go func() {
