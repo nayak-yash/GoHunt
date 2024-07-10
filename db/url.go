@@ -48,3 +48,23 @@ func (crawled *CrawledUrl) Save() error {
 	}
 	return nil
 }
+
+func (crawled *CrawledUrl) GetNotIndex() ([]CrawledUrl, error) {
+	var urls [] CrawledUrl
+	tx := DBconn.Where("indexed = ? AND last_tested IS NOT NULL", false).Find(&urls)
+	if tx.Error != nil {
+		return []CrawledUrl{}, tx.Error
+	}
+	return urls, nil
+}
+
+func (crawled *CrawledUrl) SetIndexedTrue(urls []CrawledUrl) error {
+	for _, url := range urls {
+		url.Indexed = true
+		tx := DBconn.Save(&url)
+		if tx.Error != nil {
+			return tx.Error
+		}
+	}
+	return nil
+}
