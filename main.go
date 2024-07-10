@@ -3,6 +3,7 @@ package main
 import (
 	"ash/gohunt/db"
 	"ash/gohunt/routes"
+	"ash/gohunt/utils"
 	"fmt"
 	"log"
 	"os"
@@ -34,6 +35,7 @@ func main() {
 	app.Use(compress.New())
 	db.InitDB()
 	routes.SetRoutes(app)
+	utils.StartCronJobs()
 
 	// Start our server and listen for shutdown
 	go func() {
