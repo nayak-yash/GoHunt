@@ -52,6 +52,38 @@ func LoginPostHandler(c *fiber.Ctx) error {
 	return c.SendStatus(200)
 }
 
+func RegisterHandler(c *fiber.Ctx) error {
+	return render(c, views.Register())
+}
+
+func RegisterPostHandler(c *fiber.Ctx) error {
+	input := loginForm{}
+	if err := c.BodyParser(&input); err != nil {
+		c.Status(500)
+		return c.SendString("<h2>Error: Something went wrong</h2>")
+	}
+	user, err := db.CreateAdmin(input.Email, input.Password)
+	if err != nil {
+		c.Status(401)
+		return c.SendString("<h2>Error: Unauthorised access</h2>")
+	}
+	
+	signedToken, err := utils.CreateNewAuthToken(user.ID, user.Email, user.IsAdmin)
+	if err != nil {
+		c.Status(401)
+		return c.SendString("<h2>Error: Something went wrong registering in</h2>")
+	}
+	cookie := fiber.Cookie{
+		Name: "admin",
+		Value: signedToken,
+		Expires: time.Now().Add(time.Hour * 24),
+		HTTPOnly: true,
+	}
+	c.Cookie(&cookie)
+	c.Append("HX-Redirect", "/")
+	return c.SendStatus(200)
+}
+
 func LogoutHandler(c *fiber.Ctx) error {
 	c.ClearCookie("admin")
 	c.Set("HX-Redirect", "/login")
@@ -84,7 +116,7 @@ func AuthMiddleWare(c *fiber.Ctx) error {
 }
 
 func DashboardHandler(c *fiber.Ctx) error {
-	settings := db.SearchSettings{}
+	settings := &db.SearchSettings{}
 	err := settings.Get()
 	if err != nil {
 		c.Status(500)

@@ -16,35 +16,35 @@ type User struct {
 	UpdatedAt time.Time  `json:"updatedAt"`
 }
 
-func (u *User) CreateAdmin() error {
-	user := User{
-		Email: "email",
-		Password: "password",
+func CreateAdmin(email string, password string) (User, error) {
+	admin := User{
+		Email: email,
+		Password: password,
 		IsAdmin: true,
 	}
 	// Hash password
-	password, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(admin.Password), 14)
 	if err != nil {
-		return errors.New("error creating password")
+		return User{}, errors.New("error creating password")
 	}
-	user.Password = string(password)
+	admin.Password = string(hashedPassword)
 
 	// Create User in DB
-	if err := DBconn.Create(&user).Error; err != nil {
-		return errors.New("error creating user")
+	if err := DBconn.Create(&admin).Error; err != nil {
+		return User{}, errors.New("error creating user")
 	}
-	return nil
+	return admin, nil
 }
 
-func (u *User) LoginAsAdmin(email string, password string) (*User, error) {
+func (user *User) LoginAsAdmin(email string, password string) (*User, error) {
 	// find the user
-	if err := DBconn.Where("email = ? AND is_admin = ?", email, true).First(&u).Error; err != nil {
+	if err := DBconn.Where("email = ? AND is_admin = ?", email, true).First(&user).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 	
 	// compare the passwords
-	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return nil, errors.New("invalid password")
 	}
-	return u, nil
+	return user, nil
 }

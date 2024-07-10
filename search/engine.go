@@ -88,7 +88,7 @@ func RunEngine() {
 			fmt.Println("something went wrong adding the new url to the database")
 		}
 	}
-	fmt.Println("\n Added %d new urls to the database", len(newUrls))
+	fmt.Printf("\n Added %d new urls to the database", len(newUrls))
 }
 
 func RunIndex() {
