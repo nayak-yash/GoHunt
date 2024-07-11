@@ -33,7 +33,7 @@ type Links struct {
 
 func runCrawl(inputUrl string) CrawlData {
 	resp, err := http.Get(inputUrl)
-	baseUrl, err := url.Parse(inputUrl)
+	baseUrl, _ := url.Parse(inputUrl)
 
 	// Check if error or if response is empty
 	if err != nil || resp == nil {
@@ -54,6 +54,7 @@ func runCrawl(inputUrl string) CrawlData {
 		//Response is html
 		data, err := parseBody(resp.Body, baseUrl)
 		if err != nil {
+			fmt.Println("something went wrong getting data from html body")
 			return CrawlData{Url: inputUrl, Success: false, ResponseCode: resp.StatusCode, CrawlData: ParsedBody{}}
 		}
 		return CrawlData{Url: inputUrl, Success: true, ResponseCode: resp.StatusCode, CrawlData: data}
@@ -67,6 +68,8 @@ func runCrawl(inputUrl string) CrawlData {
 func parseBody(body io.Reader, baseUrl *url.URL) (ParsedBody, error) {
 	doc, err := html.Parse(body)
 	if err != nil {
+		fmt.Println(err)
+		fmt.Println("something went wrong parsing body")
 		return ParsedBody{}, err
 	}
 	start := time.Now()
@@ -193,5 +196,6 @@ func getPageHeadings(node *html.Node) string {
 		}
 	}
 	// remove the last comma
-	return strings.TrimSuffix(headings.String(), ",")
+	findH1(node)
+	return strings.TrimSuffix(headings.String(), ", ")
 }
